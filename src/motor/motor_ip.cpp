@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include "poll.h"
+#include "crc.h"
 
 namespace obot {
 
@@ -66,31 +67,65 @@ int UDPFile::poll() {
 }
 
 ssize_t UDPFile::read(char * data, unsigned int length) {
-    ObotPacket packet;
-    packet.command = 2;
-    packet.mailbox = recv_mailbox_;
-    int send_result = sendto(fd_, &packet, 6, 0, (sockaddr *) &addr_, sizeof(addr_));
+
+    std::cout << "read size " << std::dec << length << "\n";
+
+    // Create request
+    ObotPacket req;
+    req.payload_length = 0;
+    memcpy(req.data, "OBOT", 4);
+    uint16_t crc = crc16(reinterpret_cast<uint8_t*>(&req), kHeaderLength + 4);
+    std::memcpy(req.data + 4, &crc, kCrcLength);
+
+    int send_result = sendto(fd_, &req, kHeaderLength + 4 + kCrcLength, 0, (sockaddr *) &addr_, sizeof(addr_));
     if (send_result < 0) {
       return send_result;
     }
 
+    // Read response
     int poll_result = poll();
     if (poll_result < 0) {
       return poll_result;
     }
-    int recv_result = recv(fd_, data, length-1, 0);
+
+    ObotPacket resp;
+    int recv_result = recv(fd_, reinterpret_cast<uint8_t*>(&resp), kHeaderLength + length - 1 + kCrcLength, 0);
     if (recv_result > 0) {
-      data[recv_result] = 0;
+      
+      char * c = reinterpret_cast<char*>(&resp);
+      for(int i = 0 ; i<recv_result ; i++){
+        printf("%c ", c[i]);
+      }
+
+      data[recv_result] = 0;    
+
+      // Check crc
+      uint16_t calculated_crc = crc16(reinterpret_cast<uint8_t*>(&resp), kHeaderLength + resp.payload_length);
+      uint16_t packet_crc = *reinterpret_cast<uint16_t*>((reinterpret_cast<uint8_t*>(&resp) + kHeaderLength + resp.payload_length));
+
+      std::cout << "size " << std::dec << recv_result << " calculated crc " << std::hex << calculated_crc << " packet_crc " << packet_crc << "\n";
+
+      memcpy(data, resp.data, recv_result-1);
+
     }
+
     return recv_result;
 }
 
 ssize_t UDPFile::write(const char * data, unsigned int length) {
+
+    std::cout << "write size " << std::dec << length << "\n";
+
+    assert(length < kMaxPayloadLength);
+
+    // Create packet
     ObotPacket packet;
-    packet.command = 1;
-    packet.mailbox = send_mailbox_;
+    packet.payload_length = length;
     std::memcpy(packet.data, data, length);
-    int send_result = sendto(fd_, &packet, 6+length, 0, (sockaddr *) &addr_, sizeof(addr_));
+    uint16_t crc = crc16(reinterpret_cast<uint8_t*>(&packet), kHeaderLength + length);
+    std::memcpy(packet.data + length, &crc, kCrcLength);
+
+    int send_result = sendto(fd_, &packet, kHeaderLength + length + kCrcLength, 0, (sockaddr *) &addr_, sizeof(addr_));
     if (send_result < 0) {
       return send_result;
     }
@@ -102,6 +137,12 @@ ssize_t UDPFile::write(const char * data, unsigned int length) {
     char data_in[20];
     int recv_result = recv(fd_, data_in, 19, 0);
     if (recv_result > 0) {
+
+      char * c = reinterpret_cast<char*>(&data_in);
+      for(int i = 0 ; i<recv_result ; i++){
+        printf("%c ", c[i]);
+      }
+
       data_in[recv_result] = 0;
     }
     return recv_result;

@@ -6,14 +6,20 @@
 
 namespace obot {
 
+  constexpr static uint16_t kSoF = 0xCAFE;
+  constexpr static uint8_t kFrameId = 4;
+  constexpr static uint8_t kHeaderLength = 4;
+  constexpr static uint8_t kMaxPayloadLength = 255;
+  constexpr static uint8_t kCrcLength = 2;
+
 class UDPFile : public TextFile {
  public:
     struct ObotPacket {
-        ObotPacket() : obot{'O', 'B', 'O', 'T'} {}
-        char obot[4];
-        uint8_t command;
-        uint8_t mailbox;
-        uint8_t data[1024];
+        ObotPacket() : sof{kSoF}, frame_id{kFrameId} {}
+        uint16_t sof;
+        uint8_t frame_id;
+        uint8_t payload_length;
+        uint8_t data[kMaxPayloadLength + kCrcLength];
     };
     UDPFile(std::string address) {
         int n = address.find(":");
@@ -35,8 +41,6 @@ class UDPFile : public TextFile {
     virtual ssize_t read(char * /* data */, unsigned int /* length */);
     virtual ssize_t write(const char * /* data */, unsigned int /* length */);
     virtual ssize_t writeread(const char * /* *data_out */, unsigned int /* length_out */, char * /* data_in */, unsigned int /* length_in */);
-    uint8_t send_mailbox_ = 2; // text api
-    uint8_t recv_mailbox_ = 1; // text api
     int fd_;
     int timeout_ms_ = 10;
     std::string port_;
@@ -50,8 +54,6 @@ class MotorIP : public Motor {
  public:
     MotorIP(std::string address) : realtime_communication_(address) {
         motor_txt_ = std::move(std::unique_ptr<UDPFile>(new UDPFile(address)));
-        realtime_communication_.send_mailbox_ = 4;
-        realtime_communication_.recv_mailbox_ = 3;
         fd_ = realtime_communication_.fd_;
         connect();
     }
