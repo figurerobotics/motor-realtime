@@ -1,3 +1,6 @@
+See [README.md](https://github.com/figurerobotics/motor-realtime/tree/user/chrisxu/python-venv) for updated python api instructions 
+
+## virtualenvwrapper with previous versions of cmake
 I prefer to use a virtual environment for python. My method is to use virtualenvwrapper. For example:
 ```shell
 sudo apt install -y virtualenvwrapper

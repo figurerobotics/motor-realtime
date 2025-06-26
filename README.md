@@ -66,6 +66,14 @@ Note that 36131 is returned from the motor controller which is the basic loopbac
 implemented in the motor controller. `motor_usbmon` is most helpful for debugging a separate 
 process that is communicating to the motor controllers.
 
+Install the command line tools using:
+```console
+sudo apt install -y linux-headers-$(uname -r)
+curl https://raw.githubusercontent.com/unhuman-io/obot/main/install-obot.sh > install-obot.sh
+chmod +x install-obot.sh
+./install-obot.sh
+```
+
 ## Python module installation
 Create and activate a virtual environment in any desired directory:
 ```console
@@ -73,7 +81,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-In the motor-realtime directory:
+In the motor-realtime directory (make sure venv is still activated):
 ```console
 rm -rf build
 mkdir build && cd build
