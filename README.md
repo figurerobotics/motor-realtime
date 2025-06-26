@@ -65,3 +65,29 @@ packet is a submit in (Si) and receives a callback in (Ci) 167 us later with the
 Note that 36131 is returned from the motor controller which is the basic loopback handshaking 
 implemented in the motor controller. `motor_usbmon` is most helpful for debugging a separate 
 process that is communicating to the motor controllers.
+
+## Python module installation
+Create and activate a virtual environment in any desired directory:
+```console
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+In the motor-realtime directory:
+```console
+rm -rf build
+mkdir build && cd build
+cmake -DBUILD_PYTHON_API=1 -DCMAKE_INSTALL_PREFIX=$VIRTUAL_ENV ..
+make -j
+sudo make install
+```
+
+Check if motor python module works:
+```console
+python3
+```
+```python
+>>> import motor
+>>> dir(motor)
+['Admittance', 'Chirp', 'ClearFaults', 'Command', 'Crash', 'Current', 'CurrentTuning', 'CurrentTuningCommand', 'Damped', 'DriverDisable', 'DriverEnable', 'Fault', 'FindLimits', 'HardwareBrake', 'Impedance', 'JointPosition', 'ModeDesired', 'Motor', 'MotorError', 'MotorFlags', 'MotorManager', 'MotorStatusLarge', 'NoMode', 'Open', 'PhaseLock', 'Position', 'PositionTuning', 'PositionTuningCommand', 'Random', 'Reset', 'RoundRobinData', 'Sine', 'Sleep', 'Square', 'State', 'Status', 'StepperCurrent', 'StepperMode', 'StepperTuning', 'StepperVelocity', 'StepperVelocityCommand', 'StepperVoltage', 'TextAPIItem', 'Torque', 'Triangle', 'Tuning', 'TuningCommand', 'TuningMode', 'Velocity', 'Voltage', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'diff_encoder', 'diff_mcu_time', 'get_config_dir', 'max_api_packet_size', 'mode_color']
+```

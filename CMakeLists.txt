@@ -34,6 +34,10 @@ INCLUDE(CPack)
 set (CMAKE_CXX_STANDARD 17)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
+if(BUILD_PYTHON_API)
+    find_package(Python REQUIRED COMPONENTS Interpreter Development)
+endif()
+
 option(BUILD_SHARED_LIBS "Build libraries shared" ON)
 option(BUILD_PYTHON_API "build a python api module" OFF)
 option(BUILD_MOTOR_UTIL "build motor util command line program" ON)
