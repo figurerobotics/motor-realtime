@@ -75,13 +75,21 @@ chmod +x install-obot.sh
 ```
 
 ## Python module installation
-Create and activate a virtual environment in any desired directory:
+Change to the directory you want your virtual environment, then create and activate venv:
 ```console
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-In the motor-realtime directory (make sure venv is still activated):
+Checkout the user/chrisxu/python-venv branch of figurerobotics/motor-realtime:
+https://github.com/figurerobotics/motor-realtime/tree/user/chrisxu/python-venv 
+```console
+git clone https://github.com/figurerobotics/motor-realtime
+cd motor-realtime
+```
+
+
+Remove previous builds and build with virtual environment activated: 
 ```console
 rm -rf build
 mkdir build && cd build
@@ -99,3 +107,26 @@ python3
 >>> dir(motor)
 ['Admittance', 'Chirp', 'ClearFaults', 'Command', 'Crash', 'Current', 'CurrentTuning', 'CurrentTuningCommand', 'Damped', 'DriverDisable', 'DriverEnable', 'Fault', 'FindLimits', 'HardwareBrake', 'Impedance', 'JointPosition', 'ModeDesired', 'Motor', 'MotorError', 'MotorFlags', 'MotorManager', 'MotorStatusLarge', 'NoMode', 'Open', 'PhaseLock', 'Position', 'PositionTuning', 'PositionTuningCommand', 'Random', 'Reset', 'RoundRobinData', 'Sine', 'Sleep', 'Square', 'State', 'Status', 'StepperCurrent', 'StepperMode', 'StepperTuning', 'StepperVelocity', 'StepperVelocityCommand', 'StepperVoltage', 'TextAPIItem', 'Torque', 'Triangle', 'Tuning', 'TuningCommand', 'TuningMode', 'Velocity', 'Voltage', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'diff_encoder', 'diff_mcu_time', 'get_config_dir', 'max_api_packet_size', 'mode_color']
 ```
+
+Install pybind11-stubgen for VScode autocomplete:
+```console
+pip install pybind11-stubgen
+```
+
+Find where the motor python module .so file is stored and cd there:
+```console
+python -c "import motor; print(motor.__file__)"
+```
+You may have a different python version: 
+```console
+cd .venv/lib/python3.12/site-packages
+```
+
+Build the stubs for the motor module:
+```console
+pybind11-stubgen  motor -o . \
+  --enum-class-locations "^StepperMode$:motor.StepperMode" \
+  --enum-class-locations "^ModeDesired$:motor.ModeDesired"
+```
+
+Reload VSCode. Python scripts that import motor should now autocomplete :D
