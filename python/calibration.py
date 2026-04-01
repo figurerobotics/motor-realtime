@@ -95,10 +95,10 @@ class Calibration():
             self.inst2 = a.open_resource('USB0::6833::3601::DP8E240900054::0::INSTR')
             self.inst.write("*rst")
             self.inst2.write("*rst")
-            self.ps3v3 = PowerSupply(self.inst, 3)
-            self.ps5v = PowerSupply(self.inst, 2)
-            self.ps48v = PowerSupply(self.inst2, 1)
-            self.ps10a = PowerSupply(self.inst2, 2)
+            self.ps3v3 = PowerSupply(self.inst, 3)    # instrument 1, channel 3: 3.3V rail
+            self.ps5v = PowerSupply(self.inst2, 2)    # instrument 2, channel 2: 5V rail
+            self.ps48v = PowerSupply(self.inst2, 1)    # instrument 2, channel 1: 48V bus
+            self.ps10a = PowerSupply(self.inst2, 2)    # instrument 2, channel 2: 10A phase current source
         else:
             self.ps3v3 = PowerSupplySim()
             self.ps5v = PowerSupplySim()
