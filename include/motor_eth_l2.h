@@ -12,7 +12,7 @@ class L2File;
 
 class MotorEthL2 : public Motor {
  public:
-    MotorEthL2(std::string address, std::string alias);
+    MotorEthL2(std::string address);
     virtual ~MotorEthL2();
     void open();
     bool connected() const { return connected_; }
@@ -23,6 +23,7 @@ class MotorEthL2 : public Motor {
     virtual void set_timeout_ms(int timeout_ms) override;
     virtual int get_timeout_ms() const override { return timeout_ms_; }
 
+    static std::vector<std::string> enumerate_eth_l2_devices(std::string interface);
     static int open_socket(std::string if_name);
 
  private:
